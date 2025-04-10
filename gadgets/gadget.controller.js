@@ -1,14 +1,21 @@
 ﻿const express = require('express');
 const router = express.Router();
-const userService = require('./gadget.service');
+const gadgetService = require('./gadget.service');
 
 // routes
 router.get('/', getAll);
+router.post('/saveNew', saveNew);
 
 module.exports = router;
 
 function getAll(req, res, next) {
-    userService.getAll(req)
-        .then(users => res.json(users))
+    gadgetService.getAll(req)
+        .then(gadgets => res.json(gadgets))
+        .catch(next);
+}
+
+function saveNew(req, res, next) {
+    gadgetService.saveNew(req)
+        .then(data => res.json(data))
         .catch(next);
 }
