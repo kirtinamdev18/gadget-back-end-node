@@ -8,10 +8,6 @@ const path = require("path");
 const app = express();
 app.use(express.json());
 let db = null;
-const port = 3000;
-
-// users hardcoded for simplicity, store in a db for production applications
-const users = [{ id: 1, username: 'test', password: 'test', firstName: 'Test', lastName: 'User' }];
 
 const dbFilePath = path.join(__dirname, "../db/userData.db");
 
@@ -25,9 +21,6 @@ const connectDbWithServer = async () => {
       db = await open({
         filename: dbFilePath,
         driver: sqlite3.Database,
-      });
-      app.listen(port, () => {
-        console.log(`Sqlite Server Started..!`);
       });
     } catch (error) {
       console.log(`Database Connection Failed : ${error.message}`);
@@ -61,7 +54,7 @@ async function authenticate({ username, password }) {
 }
 
 async function getAll() {
-    return users.map(u => omitPassword(u));
+  
 }
 
 // helper functions
