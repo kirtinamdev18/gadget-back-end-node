@@ -13,7 +13,11 @@ const dbFilePath = path.join(__dirname, "../db/userData.db");
 
 module.exports = {
     getAll,
-    saveNew
+    saveNew,
+    deleteGadget,
+    getSingle,
+    updateSingle,
+    deleteMultiple
 };
 
 const connectDbWithServer = async () => {
@@ -48,6 +52,20 @@ async function getAll(req) {
   }
 }
 
+async function getSingle(req) {
+  // validate id
+  if (!req.params.id){
+    errors.push("No id specified");
+  }
+  let getAllGadgets = `SELECT * FROM gadget WHERE id = ${req.params.id}`;
+  let allGadgets = await db.get(getAllGadgets);
+  if (allGadgets === undefined) {
+      throw 'No Gadget is available with this id in system';
+  } else {
+      return allGadgets
+  }
+}
+
 async function saveNew(req) {
   var errors=[]
   // validate title and description
@@ -76,6 +94,81 @@ async function saveNew(req) {
           "message": "Data is saved successfully",
           "data": data,
           "id" : this.lastID
+      };
+  });
+  return saveGadgetResponse;
+}
+
+async function updateSingle(req) {
+  var errors=[]
+  // validate title and description
+  if (!req.body.title){
+      errors.push("No title specified");
+  }
+  if (!req.body.description){
+      errors.push("No description specified");
+  }
+  var data = {
+    title: req.body.title,
+    description: req.body.description,
+    price: req.body.price,
+    status: 'active',
+    stock: req.body.stock,
+    id: req.body.id
+  }
+  var sql ='UPDATE gadget SET title = ?, description = ?, price = ?, status = ?, stock = ? WHERE id = ?'
+  var params =[data.title, data.description, data.price, data.status, data.stock, data.id]
+  let saveGadgetResponse = await db.run(sql, params, function (err, result) {
+      if (err){
+          res.status(400).json({"error": err.message})
+          return {"status": "error", "message": err.message};
+      }
+      result = {
+          "status": "success",
+          "message": "Data is saved successfully",
+          "data": data,
+          "id" : this.lastID
+      };
+  });
+  return saveGadgetResponse;
+}
+
+async function deleteGadget(req) {
+  var errors=[]
+  // validate id
+  if (!req.params.id){
+      errors.push("No id specified");
+  }
+  var sql = `DELETE from gadget WHERE id = ${req.params.id}`;
+  let saveGadgetResponse = await db.run(sql, function (err, result) {
+      if (err){
+          res.status(400).json({"error": err.message})
+          return {"status": "error", "message": err.message};
+      }
+      result = {
+          "status": "success",
+          "message": "Data is deleted successfully"
+      };
+  });
+  return saveGadgetResponse;
+}
+
+async function deleteMultiple(req) {
+  var errors=[]
+  // validate id
+  if (!req.body.selectedIds){
+      errors.push("No id specified");
+  }
+  const selctedIdsStr = req.body.selectedIds.join(',')
+  var sql = `DELETE from gadget WHERE id IN (${selctedIdsStr})`;
+  let saveGadgetResponse = await db.run(sql, function (err, result) {
+      if (err){
+          res.status(400).json({"error": err.message})
+          return {"status": "error", "message": err.message};
+      }
+      result = {
+          "status": "success",
+          "message": "Data is deleted successfully"
       };
   });
   return saveGadgetResponse;
